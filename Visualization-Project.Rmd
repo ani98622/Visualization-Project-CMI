@@ -1,0 +1,513 @@
+---
+title: "Visualization Project"
+author: "Aniket Tiwari"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, message = FALSE , include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction 
+
+In the fast-paced world of modern cricket, the **Indian Premier League (IPL)** stands as a shining beacon of sporting entertainment, blending talent from around the globe in a high-octane cricketing extravaganza. The IPL has not only redefined the way cricket is played but has also created an unprecedented wealth of data, ranging from player statistics to match outcomes, that provides a treasure trove of insights waiting to be unearthed. In this data analytics and *Visualization project*, we embark on a journey to delve deep into the IPL data-set(2008-2019), employing data analysis techniques and *powerful visualization* using R to unlock hidden patterns, uncover meaningful trends, and gain a comprehensive understanding of the league's evolution over the years.  
+\t Join us as we explore the numbers behind the IPL, shedding light on the strategies, performances, and stories that have shaped this iconic cricketing phenomenon.
+  
+  
+## Data Description 
+
+*Data set Name*: IPL Datasets
+
+*Source*: Kaggle - IPL Datasets on Kaggle
+
+*Description*:
+The IPL Datasets is a collection on Kaggle includes multiple CSV files, each focusing on specific aspects of the IPL out of which some of them used here are :
+1-Overs Without Super Overs
+2-Matches
+3-Overs_Data
+
+'Matches': This dataset provides detailed information about each IPL match, including match date, venues, teams, toss details, and more.
+
+'Overs Without Super Over' : This data sets provides information regarding current innings , match id, batting team, bowling teams, runs conceded etc. 
+
+'Overs_Data' : This data set contains info about the runs made by each team after each match.
+
+*Key Features*:
+
+Detailed match information, allowing for analysis of match outcomes, venues, and team performance.
+Overs data contains over by over conceded runs which can be be very useful to study several aspects such as good rotation of bowlers by respective 'captains' or teams performance in *Power plays(01-04)* and *Death Overs(16-20)*.
+
+*Data Size*:
+The dataset comprises multiple CSV files, with varying sizes depending on the specific dataset. For example, the "Matches" dataset contains 757 rows and 17 columns.
+
+*Data Format*:
+All datasets are provided in CSV format, making them compatible with a wide range of data analysis and visualization tools.
+
+*Data Variables*:
+
+Matches : match_id, season, date, venue, team1, team2, toss_winner, toss_decision, result, dl_applied, winner, win_by_runs, winning team, win_by_wickets. 
+
+*Overs Without Super Over* : 
+match_id, inning, batting_team, bowling_team,	over,	runs,	wickets	winner.
+
+
+## Exploratory Data Analysis
+
+
+```{r , message=FALSE,warning=FALSE,echo=FALSE, fig.width=5, fig.height=3 , fig.align='center'}
+
+matches_file = read.csv("https://drive.google.com/uc?export=download&id=1C83cIZYxqRmV4Ul6xXCo_Wyw7DcefIRV")
+matches = na.omit(matches_file)
+attach(matches)
+
+overs_file = read.csv("https://drive.google.com/uc?export=download&id=1_sSC6LarhXakGNCqNnrwsjrEA3546abV")
+overs = na.omit(overs_file)
+attach(overs)
+
+overs_file = read.csv("https://drive.google.com/uc?export=download&id=1UkbI-F0pF7bSSveQi2xg270O5NwUU4pF")
+overs_data = na.omit(overs_file)
+attach(overs_data)
+
+# loading the packages installed
+
+library(ggplot2)
+library(rmarkdown)
+library(knitr)
+library(tidyr)
+library(dplyr)
+
+matches = matches %>% arrange(season)
+# draw the graph of total wins against total matches played in overs
+data = matches %>% select("team1", "team2", "winner")
+df1 = as.data.frame(table(data$team1)+table(data$team2))
+colnames(df1) <- c("Teams","Total_Played")
+df2 = as.data.frame(table(data$winner))[-1,]
+colnames(df2) <- c("Teams","Matches_Won ") 
+merged_df <- merge(df1, df2, by = "Teams", all = TRUE)
+
+ggplot(merged_df, aes(x = Total_Played, y = merged_df$`Matches_Won `, label = Teams)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "#FF00FF") + # Add a regression line
+  labs(
+    title = "     Fig-01: Matches Won vs. Matches Played",
+    x = "Matches Played",
+    y = "Matches Won"
+  )+
+  theme_minimal()+
+  theme(
+    plot.title = element_text(size = 12, hjust = 0.5, face = "bold", color = "navy"),
+    axis.text.x = element_text(size = 14, color = "black"),
+    axis.text.y = element_text(size = 14, color = "black"),
+    axis.title = element_text(size = 16, face = "bold"),
+    panel.grid.major = element_line(color = "#FF9933", size = 0.2)
+  )
+```
+
+Above scatter plot (fig-01) represents a points plotted on the basis of 'matches won by teams' against the 'matches they played'.This is evaluated as the sum of each teams no. of matches they participated in and sum of no. of matches which they won.The blue line represents the 'best fit line' of the given data.
+
+
+```{r , echo = FALSE ,warning=FALSE , message = FALSE , fig.align='center', fig.height=3, fig.width=6}
+
+merged_df$Probabilities = merged_df$Matches_Won / merged_df$Total_Played
+
+# Create a bar graph
+ggplot(merged_df, aes(x = Teams, y = Probabilities)) +
+  geom_bar(stat = "identity", fill = "#42f5d7" ) +
+  labs(
+    title = "     Fig-02 : Team winning Probabilities",
+    x = "Teams",
+    y = "Probabilities"
+  ) +
+  theme(axis.text.x = element_text(angle = -45, hjust = .5))+
+  theme_minimal() +  # Apply a minimal theme
+  theme(
+    axis.text.x = element_text(angle = -45, hjust = 0.5, size = 12, color = "black"),
+    axis.text.y = element_text(size = 12, color = "black"),
+    axis.title = element_text(size = 14, face = "bold", color = "black"),
+    plot.title = element_text(size = 12, face = "bold", hjust = 0.5, color = "navy"),
+    plot.background = element_rect(fill = "white"),
+    panel.background = element_rect(fill = "white"),
+    panel.grid.major = element_line(color = "#f5d142", size = 0.2),
+    panel.grid.minor = element_blank(),
+    legend.position = "none" 
+    )
+
+```
+\
+Above bar graph(fig-02) demonstrates the teams performance and its winning probabilities according to the previous performance.  
+\t From here it is clearly evident that teams **Chennai Super Kings(CSK)** and **Mumbai Indians(MI)** have the *highest* match winning probabilities i.e 0.62 and 0.57 respectively which means that CSK wins almost 60% of the times they play whereas MI wins almost 57% times.  
+\t Furthermore, "Pune Warriors(PW)" has the least percentage of winning i.e. roughly 38%.  
+
+```{r , echo = FALSE ,warning=FALSE , message = FALSE , fig.align='center', fig.height=3, fig.width=6}
+merged_df$Matches_Lost = merged_df$Total_Played-
+  merged_df$Matches_Won 
+
+merged_df <- merged_df[, -which(names(merged_df)=="Probabilities")]
+
+team_data <- gather(merged_df, Status, Count, -Teams)
+
+# Create a stacked bar graph
+ggplot(team_data, aes(x = team_data$Teams, y = Count, fill = Status)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "         Fig-03 : Stacked Bar Graph : Won and Lost",
+    x = "Teams",
+    y = "Counts"
+  ) +
+ scale_fill_manual(
+    values = c("Matches_Won" = "gray", "Matches_Lost" = "black"),
+    name = "Status",
+    breaks = c("Matches_Won", "Matches_Lost"),
+    labels = c("Matches Won", "Matches Lost") 
+  ) +
+  theme(axis.text.x = element_text(angle = -45, hjust = 0))
+
+```
+\  
+Above plot denotes the "stacked bar graph" of the teams in IPL based on their winning and losing the games.
+\t By looking carefully on the plot we find that "Mumbai Indians" have played the maximum no. of matches and has won most matches (represented by gray color).This verifies the teams legacy of winning titles.  
+Also, from here it is clearly evident that "Gujarat Lions(GL)" have played least no. of matches i.e they have appeared for one or two seasons only.  
+From this graph we can infer one more strong conclusion that "Royal Challengers Bangalore(RCB)" and "Delhi Daredevils(DD)" though have played all the seasons but had faced several defeats owing to which they haven't won IPL trophies so far. 
+
+
+```{r , echo = FALSE ,warning=FALSE,message = FALSE, fig.width=6 ,fig.height=3 ,fig.align='center' }
+
+winner_stats <- matches %>%
+  filter(winner == toss_winner) %>%
+  count(winner)
+
+colnames(winner_stats) = c("Teams","Toss_Won_Match_Won")
+
+winner_stats = merge(winner_stats, merged_df, by = "Teams" , all = TRUE) 
+
+Toss_Lost_Match_Lost = matches %>%
+  filter(winner != toss_winner) %>%
+  count(toss_winner)
+
+colnames(Toss_Lost_Match_Lost) = c("Teams","Toss_Lost_Match_Lost")
+winner_stats = merge(winner_stats,Toss_Lost_Match_Lost,
+                     by = "Teams", all = TRUE)
+
+gg1 <- ggplot(winner_stats, aes(x = Toss_Won_Match_Won , y = Total_Played , label = Teams))+
+  geom_point()+
+  geom_smooth(method = "lm" ,se = FALSE , color = "#e00202")+
+  labs(
+    title = "       Fig-04 : Matches Won vs. Toss_Won_Match_Won ",
+    x = "Matches Won",
+    y = "Toss_Won_Match_Won"
+  )+
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 12, face = "bold", hjust = 0.5, color = "navy"),
+    axis.text.x = element_text(size = 12, color = "black"),
+    axis.text.y = element_text(size = 12, color = "black"),
+    axis.title = element_text(size = 14, face = "bold", color = "black"),
+    panel.grid.major = element_line(color = "#deceed", size = 0.2),
+    panel.grid.minor = element_blank(),
+    plot.background = element_rect(fill = "white"),
+    panel.background = element_rect(fill = "#f2edbd")
+  )
+gg1
+
+```
+
+```{r , echo = TRUE, warning=FALSE, message = FALSE }
+corr_won = cor(x = winner_stats$Toss_Won_Match_Won, y = winner_stats$Total_Played , use = "everything",
+               method=c("pearson") )
+corr_won  #Correlation
+```
+From above plot(Fig-04) it is signified that there exists a *good relationships* between "Toss Winning" and "Match winning".Thus, it advisable to the captains to take wise decision after winning the "toss" i.e to bat or to bowl depending upon circumstances.
+
+```{r , echo = FALSE ,warning=FALSE,message = FALSE, fig.width=6, fig.height=3, fig.align='center' }
+
+gg2 <- ggplot(winner_stats, aes(x = Toss_Lost_Match_Lost , y = Total_Played , label = Teams))+
+  geom_point()+
+  geom_smooth(method = "lm" ,se = FALSE , color = "#5809eb")+
+  labs(
+    title = "     Fig-05 : Matches Lost vs. Toss_Lost_Match_Lost ",
+    x = "Matches Lost",
+    y = "Toss_Lost_Match_Lost"
+  )+
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 12, face = "bold", hjust = 0.5, color = "black"),
+    axis.text.x = element_text(size = 12, color = "black"),
+    axis.text.y = element_text(size = 12, color = "black"),
+    axis.title = element_text(size = 14, face = "bold", color = "black"),
+    panel.grid.major = element_line(color = "#e4e6a1", size = 0.2),
+    panel.grid.minor = element_blank(),
+    plot.background = element_rect(fill = "white"),
+    panel.background = element_rect(fill = "#cfe1e8")
+  )
+gg2
+
+```
+
+```{r , echo = TRUE,warning=FALSE,message = FALSE }
+corr_lost_p = cor(x = winner_stats$Toss_Lost_Match_Lost, y = winner_stats$Total_Played, use = "everything",method=c("pearson") )
+corr_lost_p
+```
+Now,from above plot(Fig-05) and "correlation" value we cannot say much about losing of the game when a team has lost the toss.
+
+```{r , echo = FALSE,warning=FALSE , message = FALSE ,fig.align='center', fig.width=6, fig.height= 4}
+data_players = data.frame(table(matches$player_of_match))
+colnames(data_players) <- c("Players" , "MOTM count") 
+data_players = data_players %>% filter(`MOTM count`>15)
+
+data_players$Percentage <- (data_players$`MOTM count` / sum(data_players$`MOTM count`)) * 100
+
+gg3 <- ggplot(data_players, aes(x = "", y = data_players$Percentage , fill = Players)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar(theta = "y") +
+  theme_void() +  # Remove axis labels and gridlines
+  theme(legend.position = "right")  # Adjust legend position
+
+gg3 <- gg3 +
+  labs(title = "                        Fig-06 : Pie Chart : MOTM > 15")+
+  geom_text(aes(label = paste0(round(Percentage,1), "%")), position = position_stack(vjust = 0.5), size = 4)
+gg3
+
+```
+\  
+Above unique representation is called as *Pie Diagram*.
+Here,it represents the percentage of each player about how many times has won 'Man of the Match(MOTM)' title in different IPL matches and has contributed to his team's victory.
+**Note** : Pie Diagram has been made keeping in mind that 'xyz' player has won 'at least 15' MOTM titles then only he is considered.  
+
+\t  Thus,seeing the pie-chart we can clearly conclude that 'Christopher Henry Gayle' is the best player of IPL since he has won maximum no. of MOTM titles followed by 'Abraham Benjamin De Villiers' who has won many titles and lead to team's victory.  
+
+```{r , echo=FALSE, message = FALSE }
+# Count matches won by each team at each venue
+
+result <- matches %>%
+  group_by(winner,city) %>%
+  summarise(winner = n())
+
+team_unique = unique(matches$winner)
+
+team_venue_wins = c()
+
+for (names in team_unique){
+  
+  winning_team <- matches$city[matches$winner == names]
+  winning_team <- data.frame(table(winning_team))
+  colnames(winning_team) <- c('Venue','Wins')
+  winning_team <- winning_team[order(winning_team$Wins, decreasing = T), ]
+  winning_team = winning_team[winning_team$Wins > 1,]
+  winning_team$per_win = winning_team$Wins/sum(winning_team$Wins)*100
+  team_venue_wins <- c(team_venue_wins, list(winning_team))
+}
+
+```
+
+```{r , echo=FALSE, message = FALSE, out.width="50%" }
+ggplot(data.frame(team_venue_wins[1]), 
+       aes(y = Venue, x = per_win)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "   Fig-07(a) : KKR - Win percentage by Venue ",
+    y = "Venue",
+    x = "Win Percentage"
+  ) +
+  theme(axis.text.y = element_text(angle = 0 , hjust = 0))
+
+ggplot(data.frame(team_venue_wins[2]), 
+       aes(y = Venue, x = Wins)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "   Fig-07(b) : CSK - Win percentage by Venue ",
+    y = "Venue",
+    x = "Win Percentage"
+  ) +
+  theme(axis.text.y = element_text(angle = 0, hjust = 0))
+```
+
+```{r , echo=FALSE, message = FALSE , out.width="50%" }
+
+ggplot(data.frame(team_venue_wins[11]), 
+       aes(y = Venue, x = Wins)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "   Fig-07(c) : SRH - Win percentage by Venue ",
+    y = "Venue",
+    x = "Win Percentage"
+  ) +
+  theme(axis.text.y = element_text(angle = 0, hjust = 0))
+
+ggplot(data.frame(team_venue_wins[8]), 
+       aes(y = Venue, x = Wins)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "   Fig-07(d) : MI - Win percentage by Venue ",
+    y = "Venue",
+    x = "Win Percentage"
+  ) +
+  theme(axis.text.y = element_text(angle = 0, hjust = 0))
+```
+
+```{r , echo=FALSE, message = FALSE , out.width="50%" }
+ggplot(data.frame(team_venue_wins[4]), 
+       aes(y = Venue, x = Wins)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title ="   Fig-07(e) : RCB - Win percentage by Venue ",
+    y = "Venue",
+    x = "Win Percentage"
+  ) +
+  theme(axis.text.y = element_text(angle = 0, hjust = 0))
+
+ggplot(data.frame(team_venue_wins[6]), 
+       aes(y = Venue, x = Wins)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "   Fig-07(f) : KXIP - Win percentage by Venue ",
+    y = "Venue",
+    x = "Win Percentage"
+  ) +
+  theme(axis.text.y = element_text(angle = 0, hjust = 0))
+```
+Fig-07(a-f) contains of 6 teams in IPL who have won *(more than 1 matches)* in a particular city and a *horizontal bar graph* of each team has been made.On 'X' axis contains the 'Percentage Win' of a particular team against the cities on 'Y' axis(say KKR in Fig-07(a)).
+From all of the above prepared graphs it is clearly visible that the teams have won maximum matches at there home grounds such
+MI has won maximum matches in Mumbai and KXIP has won maximum in Chandigarh,Punjab.
+Thus,this paves a primary step in *predicting* the teams victory by 'analyzing' the teams previous performance on that venue. 
+
+
+```{r, echo=FALSE , warning=FALSE, message = FALSE , fig.align='center', fig.height=4 , fig.width=6}
+
+# Now we are intented to make a box plot of each team and its total on which 
+# we will make conclusions regarding the outliers.
+
+g_box_plot <- ggplot(overs_data, aes(x = batting_team, y = total)) +
+  geom_boxplot(fill = "skyblue", color = "darkblue", alpha = 0.7) +
+  labs(
+    title = "Fig-08 : Box-Plot of Team Totals",
+    x = "Batting Team",
+    y = "Total Runs"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 16, hjust = 0.5),
+    axis.text.x = element_text(size = 12, color = "black"),
+    axis.text.y = element_text(size = 12, color = "black"),
+    axis.title = element_text(size = 16, face = "plain"),
+    panel.background = element_rect(fill = "white"),
+    panel.grid.major = element_line(color = "gray", size = 0.2)
+  )
+g_box_plot
+
+```
+Above Fig-08 represents a 'Box-Plot' which is plotted against the batting teams and their individual totals made in different innings played throughout the IPL.From the plot we can draw some conclusions such as :
+1- RCB is the most inconsistent performer as they have more outliers compared to other teams.The team has made 'Maximum Total'
+and records 'Minimum Total' also in IPL history.
+2- KXIP is th most consistent in making the totals i.e they bat almost uniformly in every match and their total ranges in (140-170).
+similary, many more inferences can be drawn. 
+
+```{r , echo=FALSE, message = FALSE , warning=FALSE}
+
+# Now, making it more interesting we will be using a SQL Query
+# to work with the data in a more intuitive way
+
+if (!require(RSQLite)) {
+  install.packages("RSQLite")
+  library(RSQLite)
+}
+
+db_connection <- dbConnect(RSQLite::SQLite(), dbname = "mydatabase.db")
+dbWriteTable(db_connection, name = "mytable", value = overs, overwrite = T)
+query_result <- dbGetQuery(db_connection, "select winner,batting_team , sum(runs) from mytable where over >= 16.0  and over <= 20.0 group by match_id, batting_team order by sum(runs) desc")
+```
+
+```{r , echo = FALSE ,warning=FALSE , message = FALSE , fig.align='center', fig.height=3, fig.width=6}
+
+# now objective is to check the relation ship between death runs 
+# and winning 
+
+more_thirty = query_result %>% filter(query_result$`sum(runs)` > 30)
+count_winning <- data.frame(table(more_thirty$winner))
+count_scoring <- data.frame(table(more_thirty$batting_team))
+colnames(count_winning) = c("Teams" , "Count_Winning")
+colnames(count_scoring) = c("Teams" , "Count_Scoring")
+merged_data = merge(count_winning , count_scoring , by="Teams" , all=TRUE)
+
+# before chechking relationship, We will make a pie chart
+
+count_scoring$pieperc = round(100*count_scoring$Count_Scoring / sum(count_scoring$Count_Scoring) , 1)
+
+gg_pie_chart <- ggplot(count_scoring, aes(x = "", y = pieperc , fill = count_scoring$Teams)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar(theta = "y") +
+  theme_void() +
+  labs(
+    title = "                 Fig-09 Pie Chart ",
+    fill = "Category"
+  )
+gg_pie_chart
+
+```
+Above Fig-09 represents a pie chart of the percentage of how many times teams have made more than thirty runs in Death Overs(16-20). So,we can see that 'CSK' has made 'maximum no. of times' whereas 'SRH' has made 'least number of times'.
+
+```{r , echo=FALSE, warning=FALSE , message = FALSE , fig.align='center' , fig.height=3 , fig.width=6}
+
+gg4 <- ggplot(merged_data, aes(x = Count_Winning, y = Count_Scoring)) +
+  geom_point(size = 3.5, color = "navy", alpha = 0.5) +  # Customize point appearance
+  geom_smooth(method = "lm", se = FALSE, color = "chocolate", linetype = "solid")  # Customize line appearance
+
+gg4 <- gg4 +
+  labs(
+    title = "Fig-10 : Scatter Plot with a Best fit line",
+    x = "Count_Winning",
+    y = "Count_Scoring"
+  )
+
+gg4 <- gg4 +
+  theme_minimal()+
+  theme(
+    plot.title = element_text(size = 18, hjust = 0.5, face = "bold", color = "navy"),
+    axis.text.x = element_text(size = 14, color = "black"),
+    axis.text.y = element_text(size = 14, color = "black"),
+    axis.title = element_text(size = 16, face = "bold"),
+    panel.grid.major = element_line(color = "gray", size = 0.2)
+  )
+gg4
+
+```
+
+```{r , echo=TRUE}
+
+merged_data = merge(count_winning , count_scoring , by = "Teams" , all = T)
+merged_data = na.omit(merged_data)
+pearson_corr <- cor(merged_data$Count_Winning, merged_data$Count_Scoring, method = "pearson")
+pearson_corr
+```
+In 'Scatter Plot' *X axis* represents the no. of times the teams have made more than 30 runs whereas *Y axis* represents the no. of times teams have won after *scoring >30 runs*. Thus, from Fig-10 and 'correlation value i.e. 0.96' is clearly visible that the teams which have made more than 30 runs in *deaths overs(16-20)* have won most of the times.
+
+
+
+## Results 
+We have come across several results which were obtained using the different rows and colum values of the csv files. 
+
+a) **Trends and Patterns**: 1-IPL matches are very high scoring matches with many boundary hits.  
+2-Teams making death over runs tend to win the match
+
+b) **Key Players and Teams**: 1-Some of the key players observed were CH Gayle, AB De Villiers, David Warner etc.  
+                              2- Top 3 Teams - i)   - Mumbai Indians(MI)  
+                                              ii)  - Chennai Super Kings(CSK)  
+                                              iii) - Kolkata Knight Riders(KKR)
+
+c) **Correlations and Relationships**: 1-We have found the +ve correlation between toss winning and match winning.  
+2-We have found the strong +ve correlation between team securing more than 30 runs in last 4 overs and winning the match.
+
+## Conclusion 
+After playing with the exciting figures of Indian Premier League(2008-19) and visualizing it to greater extent with help of R, we have come across the end of Project. Thus, I would like to conclude as-
+
+a) **Recommendations** : 1-More IPL venues should be introduced in the country as IPL is followed religiously by our countrymen.  
+2-Mixed gender IPL can be introduced to engage more and more audience. 
+
+b) **Limitations** : Some of the data values were missing.If numeric then replaced by median of the data otherwise values were                     omitted
+
+c) **Future Analytics and Findings ** : 1-We can find "World Eleven" i.e the best 11 players.  
+2- We can make the "Heat-map" of the  individual players and its "best zone" and "danger zone" of batting.  
+3- We can predict the teams total in upcoming  according to there previous performance
+
+Thus, in this manner many more exciting analytics can be drawn.
+
