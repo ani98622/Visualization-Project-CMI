@@ -21,4 +21,13 @@ Welcome to my Visualization Project as part of my curriculum at CMI. This projec
 ### Project Links:
 
 - **Data Source:** [Kaggle - IPL Datasets](https://www.kaggle.com/datasets/anuranroy/ipldatasets)
-- **Dashboard Link:** [Explore the Interactive Dashboard](https://ani98622.shinyapps.io/AppFi
+- **Dashboard Link:** [Explore the Interactive Dashboard](https://ani98622.shinyapps.io/AppFinal/)
+- **YouTube Video:** [Watch the Visualization Project Video](https://bit.ly/Visualization_Project)
+
+### Get Started:
+
+1. Explore the dataset.
+2. Interact with the interactive dashboard to gain insights.
+3. Watch the explanatory video for a comprehensive overview.
+
+Feel free to reach out if you have any questions or feedback!
