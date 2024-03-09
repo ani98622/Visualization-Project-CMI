@@ -2,6 +2,12 @@
 
 Welcome to my Visualization Project as part of my curriculum at CMI. This project is centered around data analysis and visualization using the R programming language.
 
+### Project Links:
+
+- **Data Source:** [Kaggle - IPL Datasets](https://www.kaggle.com/datasets/anuranroy/ipldatasets)
+- **Dashboard Link:** [Explore the Interactive Dashboard](https://ani98622.shinyapps.io/AppFinal/)
+- **YouTube Video:** [Watch the Visualization Project Video](https://bit.ly/Visualization_Project)
+
 ### Components of the Project:
 
 1. **Component-I (EDA in R Markdown):**
@@ -17,12 +23,6 @@ Welcome to my Visualization Project as part of my curriculum at CMI. This projec
 3. **Component-III (Explanatory Video):**
    - Created a comprehensive explanatory video, approximately 5 minutes in length.
    - The video showcases the data analysis process, key insights, and visualizations derived.
-   
-### Project Links:
-
-- **Data Source:** [Kaggle - IPL Datasets](https://www.kaggle.com/datasets/anuranroy/ipldatasets)
-- **Dashboard Link:** [Explore the Interactive Dashboard](https://ani98622.shinyapps.io/AppFinal/)
-- **YouTube Video:** [Watch the Visualization Project Video](https://bit.ly/Visualization_Project)
 
 ### Get Started:
 
